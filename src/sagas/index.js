@@ -1,6 +1,8 @@
 import {take, fork, select, call, put, all} from 'redux-saga/effects';
 import {REQUEST, SUCCESS, FAILURE} from "actions";
 import promisified from './promisified';
+import messengers from 'components/messengers/saga'
+import 'whatwg-fetch';
 
 function* logger() {
     while (true) {
@@ -39,11 +41,21 @@ function* failure() {
 }
 
 export default function* () {
+    let client = (url) => ({
+            abs: uri => {
+                return `${url}${uri}`
+            },
+            fetch: (path, options) => {
+                return fetch(`${url}${path}`, options);
+            }
+        })
+    ;
     yield all([
         fork(logger),
         fork(request),
         fork(success),
         fork(failure),
         fork(promisified),
+        fork(messengers(client("http://localhost:3002")))
     ]);
 }

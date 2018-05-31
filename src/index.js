@@ -6,10 +6,12 @@ import createHistory from 'history/createBrowserHistory'
 import {Route, Switch} from 'react-router'
 
 import './index.css';
-import App from './App';
+import Login from 'containers/login';
+import Home from 'containers/home';
 import registerServiceWorker from './registerServiceWorker';
 import configure from 'medium';
 import Restricted from 'containers/restricted'
+import messenger from 'components/messengers/reducer'
 
 
 const history = createHistory();
@@ -18,15 +20,18 @@ const history = createHistory();
 const middleware = routerMiddleware(history);
 
 
-configure([middleware], {router: routerReducer})
+configure([middleware], {
+    router: routerReducer,
+    messenger: messenger
+})
     .then(
         medium => {
             ReactDOM.render(
                 (<Provider store={medium}>
                     <ConnectedRouter history={history}>
                         <Switch>
-                            <Route exact path="/login" component={App}/>
-                            <Restricted exact path="/" component={App}/>
+                            <Route exact path="/login" component={Login}/>
+                            <Restricted exact path="/" component={Home}/>
                         </Switch>
                     </ConnectedRouter>
                 </Provider>),
