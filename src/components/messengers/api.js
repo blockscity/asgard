@@ -5,29 +5,7 @@
 
 import uuid from 'uuidjs';
 
-class Messenger {
-    constructor(uri, content, fetch) {
-        this.uri = uri;
-        this.content = content;
-        this.fetch = fetch;
-    }
-
-    async dealloc() {
-
-    }
-
-    async speak() {
-
-    }
-
-    async hear() {
-
-    }
-}
-
 export default class Messengers {
-
-
     constructor(client) {
         this.client = client;
     }
@@ -42,15 +20,17 @@ export default class Messengers {
                 data: {
                     id: `${uuid.generate()}`,
                     type: "messengers",
-                    attributes: {}
+                    attributes: {
+                    }
                 }
             })
-        }).then(res => {
-            console.log(res);
-            console.log(res.headers.get("Location"));
-            res.headers.forEach((k, v) => console.log(k, "=>", v));
+        }).then(({headers}) => {
+            let location = headers.get("Location");
+            let id = location.split("/")[location.split("/").length - 1];
             return {
-                uri: this.client.abs(res.headers.get("Location"))
+                id: id,
+                type: "messengers",
+                self: this.client.abs(location)
             };
         });
     }
@@ -59,11 +39,25 @@ export default class Messengers {
 
     }
 
-    async speak() {
+    async said() {
 
     }
 
-    async hear() {
-
+    async heard(messenger) {
+        console.log(messenger);
+        let {self} = messenger;
+        return await this.client.fetch(this.client.rel(self), {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(({json}) => {
+            return {
+                id: messenger.id,
+                type: "messengers",
+                self: self,
+                attributes: json.data.attributes
+            };
+        });
     }
 }

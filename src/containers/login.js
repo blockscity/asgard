@@ -5,6 +5,12 @@ import QRCode from 'components/qrcode';
 import Messenger from 'components/messengers'
 import Share from 'components/messengers/share'
 
+const QR = (props) => {
+    const {messenger} = props;
+    let data = messenger.attributes.content.access_token;
+    return <QRCode data={data}/>;
+};
+
 class Login extends Component {
     render() {
         return (
@@ -13,9 +19,9 @@ class Login extends Component {
                     <img src={logo} className="App-logo" alt="logo"/>
                     <h1 className="App-title">Welcome to the blockcity</h1>
                 </header>
-                <Messenger>
+                <Messenger hearing={<div>Loading the messenger</div>}>
                     <Share>
-                        <QRCode data={"test"}/>
+                        <QR/>
                     </Share>
                 </Messenger>
             </div>

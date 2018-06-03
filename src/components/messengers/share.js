@@ -8,7 +8,7 @@ export default (props) => {
     return (<div>
         {
             React.Children.map(children, child =>
-                React.cloneElement(child, {...this.props, messenger: messenger, data: messenger.uri}))
+                React.cloneElement(child, {...this.props, messenger: messenger, data: "aa"}))
         }
     </div>)
 }

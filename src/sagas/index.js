@@ -41,12 +41,68 @@ function* failure() {
 }
 
 export default function* () {
+    class HttpError extends Error {
+        constructor(message, status, body = null) {
+            super(message);
+            this.message = message;
+            this.status = status;
+            this.body = body;
+            this.name = this.constructor.name;
+            if (typeof Error.captureStackTrace === 'function') {
+                Error.captureStackTrace(this, this.constructor);
+            } else {
+                this.stack = new Error(message).stack;
+            }
+            this.stack = new Error().stack;
+        }
+    }
+
     let client = (url) => ({
             abs: uri => {
                 return `${url}${uri}`
             },
+            rel: uri => {
+                return uri.replace(url, "");
+            },
             fetch: (path, options) => {
-                return fetch(`${url}${path}`, options);
+                const requestHeaders =
+                    (options.headers && new Headers({...options.headers})) ||
+                    new Headers({
+                        Accept: 'application/json',
+                    });
+                if (
+                    !requestHeaders.has('Content-Type') &&
+                    !(options && options.body && options.body instanceof FormData)
+                ) {
+                    requestHeaders.set('Content-Type', 'application/json');
+                }
+
+                return fetch(`${url}${path}`, {...options, headers: requestHeaders})
+                    .then(response =>
+                        response.text().then(text => ({
+                            status: response.status,
+                            statusText: response.statusText,
+                            headers: response.headers,
+                            body: text,
+                        })))
+                    .then(({status, statusText, headers, body}) => {
+                        let json;
+                        try {
+                            json = JSON.parse(body);
+                        } catch (e) {
+                            // not json, no big deal
+                        }
+                        if (status < 200 || status >= 300) {
+                            return Promise.reject(
+                                new HttpError(
+                                    (json && json.message) || statusText,
+                                    status,
+                                    json
+                                )
+                            );
+                        }
+                        return {status, headers, body, json};
+                    });
             }
         })
     ;
