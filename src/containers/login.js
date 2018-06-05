@@ -8,6 +8,7 @@ import Share from 'components/messengers/share'
 const QR = (props) => {
     const {messenger} = props;
     let data = messenger.attributes.content.access_token;
+
     return <QRCode data={data}/>;
 };
 
