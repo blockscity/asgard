@@ -1,4 +1,5 @@
 import {KJUR, KEYUTIL} from 'jsrsasign';
+import moment from 'moment';
 
 export const encode = async (key, payload) => {
     const header = {alg: 'ES256', typ: 'JWT'};
@@ -6,6 +7,15 @@ export const encode = async (key, payload) => {
         d: key,
         curve: "secp256k1"
     });
+
+    if (!payload.hasOwnProperty("iss")) {
+        return Promise.reject("iss needed")
+    }
+
+    let now = moment();
+    if (!payload.hasOwnProperty("exp") || (typeof payload.exp !== "number" || moment(payload.exp).isBefore(now))) {
+        payload.exp = now.add(10, 's').unix();
+    }
 
     return KJUR.jws.JWS.sign("ES256", header, payload, k);
 };
@@ -32,8 +42,6 @@ export const decode = async (provide, jwt) => {
     } else {
         return Promise.reject("Invalid signature")
     }
-
-
-}
+};
 
 export default {encode, decode}

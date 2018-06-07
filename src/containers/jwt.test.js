@@ -1,6 +1,9 @@
 import chai from 'chai';
 import Profile from './profile';
+import chaiPromised from 'chai-as-promised';
 
+chai.use(chaiPromised);
+chai.should();
 const expect = chai.expect;
 
 import {encode, decode} from "./jwt";
@@ -53,15 +56,21 @@ describe('jwt', () => {
         expect(decoded.payload.iss).to.equal(iss);
     });
 
-    it('should not able to encode when iss missing', function () {
-
+    it('should not able to encode when iss missing', async () => {
+        await encode(pair.pri, {
+            requested: ["name"]
+        }).should.be.rejected;
     });
 
-    it('should add the exp when encoded', function () {
-
+    it('should add the exp when encoded', async () => {
+        let encoded = await encode(pair.pri, {
+            iss: iss
+        });
+        let decoded = await decode(provider, encoded);
+        expect(decoded.payload.exp).to.be.a("number")
     });
 
-    it('should add iat when encoded', function () {
+    it('should add iat when encoded', async () => {
 
     });
 
